@@ -4,8 +4,6 @@ Mapping from Local Market Hotel ID (e.g: WVitemID)
 to Master Hotel ID (MHID) for Taggable System.
 
 
-
-
 ## How?
 
 ### *Extract*
@@ -55,3 +53,41 @@ Once you have the `.csv` file you can run the script.
 either change your `.csv` file name or update the script.
 
 The script will output a JSON file which you can use in the next step.
+
+Sample JSON:
+```js
+[
+  {
+    "HotelName": "987 Barcelona",
+    "MHID": "qpzq1bp",
+    "WVitemID": "138269",
+    "NE_Code": "HBCN987B",
+    "CAitemID": "58835",
+    "TripadvisorLocationID": "646310"
+  },
+  {
+    "HotelName": "Aana Resort and Spa",
+    "MHID": "7exzhjg",
+    "WVitemID": "108176",
+    "NE_Code": "HTDXAANA",
+    "CAitemID": "4728",
+    "TripadvisorLocationID": "582064"
+  },
+  {
+    "HotelName": "Abella",
+    "MHID": "pyypism",
+    "WVitemID": "4473",
+    "NE_Code": "CHQABEL",
+    "CAitemID": "61372",
+    "TripadvisorLocationID": "3291424"
+  },
+  {
+    "HotelName": "Abrial",
+    "MHID": "ttbL91i",
+    "WVitemID": "138821",
+    "NE_Code": "HNCEKYRI",
+    "CAitemID": "59278",
+    "TripadvisorLocationID": "196988"
+  }
+]
+```
