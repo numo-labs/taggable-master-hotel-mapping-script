@@ -98,3 +98,51 @@ Sample JSON output:
   }
 ]
 ```
+
+
+## Part 2
+
+Mapping the `CSV` from the Master Hotel CMS
+
+> `date-20160323-time-105609-42042-hotels.csv`
+
+Sample:
+
+```csv
+MID;Name;Country;ISO-2;Address;Latitude;Longitude
+022wje3;Europa;Italy;IT;"Viale Kennedy 3
+34073 Grado";"45,67960";"13,40070"
+024oua5;Hiberia;Italy;IT;"Via XXIV Maggio 8
+00187 Rome";"41,89720";"12,48680"
+028gupn;Regal Riverside;Hong Kong;HK;"34-36 Tai Chung Kiu Road
+Shatin
+Hong Kong";"22,38260";"114,19600"
+02j7qry;Okaliptus Holiday Villas Apart;Turkey;TR;"Sevket Sabanci Caddesi No. 70
+Bahçelievler Mevkii
+Turgutreis";"37,02130";"27,25120"
+02pc99z;California Apartementos;Spain;ES;"Prat d'en Carbó
+43840 Salou";"41,07620";"1,14667"
+02tu1jz;Elvis Presley's Heartbreak;United States;US;"3677 Elvis Presley Blvd.
+Memphis
+Tennessee 38116";"35,04850";"-90,02710"
+00v66am;Royal Aparthotel City Centre;Greece;GR;null;"36,44460";"28,21970"
+0114ffk;Evelyn Beach;Greece;GR;GR-70014 Hersonissos;"35,31250";"25,39890"
+011k1i7;LK Royal Wing;Thailand;TH;null;"12,93300";"100,88300"
+0153ge1;Latanya Beach Resort;Turkey;TR;"Yali Mevkii
+Çiftlik Mahallesi
+Yaliçiftlik";"36,99330";"27,53000"
+017ds1p;King;Italy;IT;"Via Tolmino, 14
+55045 Marina di Pietrasanta";"43,92030";"10,20740"
+036wyiz;KNAUS-Campingpark;Germany;DE;"In den Almen 1
+67098 Bad Dürkheim";"49,47360";"8,19200"
+03ca55r;De Curtis;Italy;IT;"Via A De Curtis 30
+95131 Catania
+Sicily & Liparic Islands";"37,50680";"15,09400"
+03dpssc;UNA Versilia;Italy;IT;"Via Sergio Bernardini ex Viale Colombo 335-337
+55041 Lido di Camaiore
+Lucca";"43,90610";"10,21760"
+03ekv2e;River Palace;Italy;IT;"Via Flaminia 33
+00196 Rome";"41,91330";"12,47520"
+```
+
+As you can see, the data exported from the 
