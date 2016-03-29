@@ -1,7 +1,14 @@
-# Taggable Master Hotel Mapping Script
+# Taggable Master Hotel ID Mapping Script
 
-Mapping from Local Market Hotel ID (e.g: WVitemID)
-to Master Hotel ID (MHID) for Taggable System.
+Each Local market has their own Hotel Code/ID, in the case of the Nordics
+the its the `WVitemID`. The *Taggable* system uses the "*Master*" Hotel ID (`MHID`).
+
+We need to map the `WVitemID` to `MHID` so we are able to perform lookups in
+*Taggable* given a `WVitemID`.
+
+This script takes a `.csv` file and transforms it into a `.JSON`
+that we can use to insert the records into the Taggable System.
+
 
 
 ## How?
@@ -23,7 +30,7 @@ Steps taken to use the data in the spreadsheet.
 ![03-download-as-csv](https://cloud.githubusercontent.com/assets/194400/14104018/d0f86266-f59a-11e5-887d-cb9318dbd917.png)
 
 
-Sample data:
+Sample `.CSV` data:
 
 ```csv
 HotelName,MHID,WVitemID,NE_Code,CAitemID,TripadvisorLocationID
@@ -54,7 +61,7 @@ either change your `.csv` file name or update the script.
 
 The script will output a JSON file which you can use in the next step.
 
-Sample JSON:
+Sample JSON output:
 ```js
 [
   {
