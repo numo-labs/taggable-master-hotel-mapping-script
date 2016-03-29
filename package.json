@@ -1,0 +1,25 @@
+{
+  "name": "taggable-master-hotel-mapping-script",
+  "version": "1.0.0",
+  "description": "script used to extract & load the hotel data into taggable system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/numo-labs/taggable-master-hotel-mapping-script.git"
+  },
+  "keywords": [
+    "extract",
+    "hotel",
+    "mapping",
+    "data"
+  ],
+  "author": "Jimmy & Friends :-)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/numo-labs/taggable-master-hotel-mapping-script/issues"
+  },
+  "homepage": "https://github.com/numo-labs/taggable-master-hotel-mapping-script#readme"
+}
