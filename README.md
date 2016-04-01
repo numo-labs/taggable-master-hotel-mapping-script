@@ -100,10 +100,12 @@ Sample JSON output:
 ```
 
 
-## Part 2
+## Part 2 - Master Hotel Records
 
 Mapping the `CSV` from the Master Hotel CMS
 
+
+> Data source: http://masterdata.prod.int/hotel-search (*TC internal network & LDAP Access required*)
 > Sample: [`date-20160323-time-105609-42042-hotels.csv`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/date-20160323-time-105609-42042-hotels.csv)
 
 Sample:

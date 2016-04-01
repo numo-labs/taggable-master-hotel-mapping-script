@@ -21,5 +21,11 @@
   "bugs": {
     "url": "https://github.com/numo-labs/taggable-master-hotel-mapping-script/issues"
   },
-  "homepage": "https://github.com/numo-labs/taggable-master-hotel-mapping-script#readme"
+  "homepage": "https://github.com/numo-labs/taggable-master-hotel-mapping-script#readme",
+  "devDependencies": {
+    "aws-sdk": "^2.3.0"
+  },
+  "dependencies": {
+    "lambda-taggable-geonames-indexer": "^1.0.1"
+  }
 }
