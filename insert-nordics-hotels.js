@@ -1,5 +1,5 @@
+var fs = require('fs');
 var geonames = require('lambda-taggable-geonames-indexer');
-
 var ne_hotels = require('./ne-wvidemid-to-mhid-mapping.json');
 console.log('Nordics Hotels:', ne_hotels.length);
 var master_hotels = require('./mhid-data.json');
@@ -42,7 +42,8 @@ ne_hotels.forEach(function (ne_hotel) {
     });
   }
 });
-var nordics_hotels_tags_file = './ne-hotles-tags.json';
+// var nordics_hotels_tags_file = './ne-hotles-tags.json';
+records = records.splice(records.length - 1560, records.length);
 console.log('NE Mapped', records.length);
 // console.log('Sample:', JSON.stringify(records[0], null, 2));
 
@@ -50,6 +51,13 @@ var AWS = require('aws-sdk');
 AWS.config.region = 'eu-west-1';
 var lambda = new AWS.Lambda();
 var limit = records.length;
+
+function save(record, type) {
+  var filename = './' + type + '/' + record._id.replace(':', '_') + '.json';
+  fs.writeFile(filename, JSON.stringify(record, null, 2), function(err, data){
+    // console.log(err, data);
+  });
+}
 
 function insert (record) {
   var params = {
@@ -60,16 +68,21 @@ function insert (record) {
   };
 
   lambda.invoke(params, function(err, data) {
+    save(record, 'records');
     if (err) {
       console.log(' - - - - - - - - - - - - - - - ERROR:')
       console.log(err);
+      err._id = record._id;
+      save(err, 'errors');
     } else {
-      console.log(data);
+      // console.log(typeof data);
+      console.log(record._id);
+      data._id = record._id;
+      save(data, 'responses');
       if(record._id.indexOf('hotel:NE') > -1) {
-        return index();
+        return next();
       }
     }
-    return;
   });
 }
 
@@ -86,23 +99,32 @@ function get_master (ne_record) {
 }
 
 
-function index () {
+function next () {
+  console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ');
+  console.log('Remaining Records:', records.length);
   if(records.length > 0) {
-    var record = records.pop();
-    var master = get_master(record);
-    // return;
-    // console.log(record);
-    // console.log(master);
+    var record = records.pop(); // a Nordics Record!
+    var master = get_master(record); // master hotel record
     var lat = record.location.lat;
     var lon = record.location.lon;
+    if(typeof lat === null || typeof lon === null) { // don't lookup a record that does not have a lat lon in Geonames
+      console.log('Record has not got lat/lon!', record);
+      return next();
+    }
+    console.log('Record has lat/lon:', lat, lon)
     geonames.find(lat, lon, function (err, data) {
-      // console.log(err, data);
+      if(!data.geonames || data.geonames.length === 0){
+          console.log(err, data);
+          return;
+      }
       geonames.hierarchy(data.geonames[0].geonameId, function(err, hierarchy) {
-        // console.log(hierarchy);
-        hierarchy.geonames = hierarchy.geonames.splice(1, hierarchy.geonames);
-        hierarchy.geonames.forEach(function (g) {
-          // insert the Geonames record
-          var geo_record = {
+        // hierarchy.geonames = hierarchy.geonames.splice(1, hierarchy.geonames.length); // remove the first item from the hierarchy (Earth);
+        var geo_tag; // we use this to add a *single* geo tag the hotel below
+
+        for(var i = 0; i < hierarchy.geonames.length; i++) {  // insert the Geonames record
+          var g = hierarchy.geonames[i];
+          // console.log(g);
+          var geonames_tag_record = {
             _id: 'geo:geonames.' + g.geonameId,
             displayName: g.name,
             location: {
@@ -110,21 +132,29 @@ function index () {
               lon: g.lng
             }
           }
-          insert(geo_record);
-        });
-        var geo_tag = {
-          tagId: 'geo:geonames.' + g.geonameId,
-          source: 'geonames',
-          inherited: false,
-          active: true
+          if(i > 0) { // earth does not have a parent in Geonames hierarchy
+            var parent = hierarchy.geonames[i - 1]; // the previous item in the hierarchy
+            geonames_tag_record.tags = [{
+              tagId: 'geo:geonames.' + parent.geonameId,
+              source: 'geonames',
+              inherited: false,
+              active: true
+            }]
+          }
+          if(g.geonameId !== 6295630) { // don't re-insert earth thousands of times!
+            insert(geonames_tag_record);
+          }
+          geo_tag = { // this is over-written until we get the last item in hierarchy
+            tagId: 'geo:geonames.' + g.geonameId,
+            source: 'geonames',
+            inherited: false,
+            active: true
+          }
         }
-        var parent =
-        master.tags.push(geo_tag);
-
-        master.tags.push(geo_tag);
+        master.tags.push(geo_tag); // attach a single geo tag to each master hotel
 
         insert(master);
-        insert(record);
+        insert(record); // Pascal instructed not to add geo tag to nordics record
       });
     });
   }
@@ -133,5 +163,4 @@ function index () {
   }
 }
 
-
-index();
+next();

@@ -14,7 +14,7 @@ for(var i = 1; i < rows.length; i++) { // last row is empty
   var row = rows[i];
   var record = {};
   row.forEach(function (value, index) {
-    record[fields[index]] = value.trim();
+    record[fields[index]] = (value === 'null') ? null : value.trim();
   });
   data.push(record);
 }

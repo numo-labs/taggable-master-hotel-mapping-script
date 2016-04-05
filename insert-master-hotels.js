@@ -1,82 +1,115 @@
+var fs = require('fs');
+var master_hotels = require('./mhid-data.json');
+var geonames = require('lambda-taggable-geonames-indexer');
+
+var AWS = require('aws-sdk');
+AWS.config.region = 'eu-west-1';
+var lambda = new AWS.Lambda();
+
+function save(record, type) {
+  var filename = './' + type + '/' + record._id.replace(':', '_') + '.json';
+  fs.writeFile(filename, JSON.stringify(record, null, 2), function(err, data){
+    // console.log(err, data);
+  });
+}
+
+function insert (record) {
+  var params = {
+    FunctionName: 'lambda-taggable-createdocument-v1', // the lambda function we are going to invoke
+    InvocationType: 'RequestResponse',
+    LogType: 'Tail',
+    Payload: JSON.stringify(record)
+  };
+
+  lambda.invoke(params, function(err, data) {
+    save(record, 'records');
+    if (err) {
+      console.log(' - - - - - - - - - - - - - - - ERROR:')
+      console.log(err);
+      err._id = record._id;
+      save(err, 'errors');
+    } else {
+      // console.log(typeof data);
+      console.log(record._id);
+      data._id = record._id;
+      save(data, 'responses');
+      if(record._id.indexOf('hotel:mhid') > -1) {
+        return next();
+      }
+    }
+  });
+}
 
 
+function next () {
+  console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ');
+  console.log('Remaining Master Hotel Records:', master_hotels.length);
+  if(master_hotels.length > 0) {
+    var master = master_hotels.pop(); // a Nordics Record!
+    var lat = master.Latitude;
+    var lon = master.Longitude;
+    if(lat === null || lon === null) { // don't lookup a record that does not have a lat lon in Geonames
+      console.log('Record has not got lat/lon!', master);
+      return next();
+    }
+    console.log('Record has lat/lon:', lat, lon, ' > Master Hotel ID:', master.MID);
+    geonames.find(lat, lon, function (err, data) {
+      if(!data.geonames || data.geonames.length === 0){
+          console.log(err, data);
+          return;
+      }
+      geonames.hierarchy(data.geonames[0].geonameId, function(err, hierarchy) {
+        // hierarchy.geonames = hierarchy.geonames.splice(1, hierarchy.geonames.length); // remove the first item from the hierarchy (Earth);
+        var geo_tag; // we use this to add a *single* geo tag the hotel below
 
+        for(var i = 0; i < hierarchy.geonames.length; i++) {  // insert the Geonames record
+          var g = hierarchy.geonames[i];
+          // console.log(g);
+          var geonames_tag_record = {
+            _id: 'geo:geonames.' + g.geonameId,
+            displayName: g.name,
+            location: {
+              lat: g.lat,
+              lon: g.lng
+            }
+          }
+          if(i > 0) { // earth does not have a parent in Geonames hierarchy
+            var parent = hierarchy.geonames[i - 1]; // the previous item in the hierarchy
+            geonames_tag_record.tags = [{
+              tagId: 'geo:geonames.' + parent.geonameId,
+              source: 'geonames',
+              inherited: false,
+              active: true
+            }]
+          }
+          if(g.geonameId !== 6295630) { // don't re-insert earth thousands of times!
+            insert(geonames_tag_record);
+          }
+          geo_tag = { // this is over-written until we get the last item in hierarchy
+            tagId: 'geo:geonames.' + g.geonameId,
+            source: 'geonames',
+            inherited: false,
+            active: true
+          }
+        }
+        var record = {
+          _id: 'hotel:mhid.' + master.MID,
+          displayName: master.Name,
+          displayName: master.Name,
+          location:  {
+            lat: master.Latitude.toString().replace(',', '.'),
+            lon: master.Longitude.toString().replace(',', '.')
+          },
+          tags: [ geo_tag ],
+        };
+        insert(record);
 
+      });
+    });
+  }
+  else {
+    return true;
+  }
+}
 
-
-
-// var ne_hotels = require('./ne-wvidemid-to-mhid-mapping.json');
-// console.log('Nordics Hotels:', ne_hotels.length);
-// var master_hotels = require('./mhid-data.json');
-// console.log('Master Hotels:', master_hotels.length);
-// var mhid_map = {};
-// master_hotels.forEach(function(h) {
-//   mhid_map[h.MID] = h;
-// });
-//
-// function location (mhid) {
-//   var master = mhid_map[mhid];
-//   return !master ? {} : {
-//     lat: master.Latitude.toString().replace(',', '.'),
-//     lon: master.Longitude.toString().replace(',', '.')
-//   }
-// }
-//
-// var ne_mapped = [];
-// ne_hotels.forEach(function (ne_hotel) {
-//   if(mhid_map[ne_hotel.MHID]) { // only map the NE hotels that have valid MHID
-//     // var master = mhid_map[ne_hotel.MHID];
-//     ne_mapped.push({
-//       _id: 'hotel:NE.wvHotelPartId.' + ne_hotel.WVitemID,
-//       displayName: ne_hotel.HotelName,
-//       location: location(ne_hotel.MHID),
-//       tags: [
-//         {
-//           tagId: 'hotel:mhid.' + ne_hotel.MHID,
-//           source: 'master_hotel_mapping',
-//           inherited: false,
-//           active: true
-//         }
-//       ],
-//       metadata: [
-//         {
-//           key: 'tripadvisor',
-//           values: [ ne_hotel.TripadvisorLocationID ]
-//         }
-//       ]
-//     });
-//   }
-// });
-// var nordics_hotels_tags_file = './ne-hotles-tags.json';
-// console.log('NE Mapped', ne_mapped.length);
-// console.log('Sample:', JSON.stringify(ne_mapped[0], null, 2));
-//
-// var AWS = require('aws-sdk');
-// AWS.config.region = 'eu-west-1';
-// var lambda = new AWS.Lambda();
-// var limit = ne_mapped.length;
-// function callme () {
-//   if(ne_mapped.length > 0) {
-//     var record = ne_mapped.pop();
-//     var params = {
-//       FunctionName: 'lambda-taggable-createdocument-v1', // the lambda function we are going to invoke
-//       InvocationType: 'RequestResponse',
-//       LogType: 'Tail',
-//       Payload: JSON.stringify(record)
-//     };
-//
-//     lambda.invoke(params, function(err, data) {
-//       if (err) {
-//         console.log(' - - - - - - - - - - - - - - - ERROR:')
-//         console.log(err);
-//       } else {
-//         console.log(data);
-//       }
-//       return callme();
-//     });
-//   }
-//   else {
-//     return true;
-//   }
-// }
-// callme();
+next();
