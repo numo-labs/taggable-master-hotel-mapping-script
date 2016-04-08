@@ -1,17 +1,20 @@
+process.env.GEONAMES_USERNAMES = 'numo,numo1,numo2,numo3,numo4,numo5'; // temp!
+
 var fs = require('fs');
+
 var geonames = require('lambda-taggable-geonames-indexer');
 var ne_hotels = require('./ne-wvidemid-to-mhid-mapping.json');
 console.log('Nordics Hotels:', ne_hotels.length);
 var master_hotels = require('./mhid-data.json');
 console.log('Master Hotels:', master_hotels.length);
 var mhid_map = {};
-master_hotels.forEach(function(h) {
+master_hotels.forEach(function (h) {
   mhid_map[h.MID] = h;
 });
 
 function location (mhid) {
   var master = mhid_map[mhid];
-  return !master ? {} : {
+  return (!master || !master.Latitude || !master.Longitude) ? {} : {
     lat: master.Latitude.toString().replace(',', '.'),
     lon: master.Longitude.toString().replace(',', '.')
   }
@@ -19,7 +22,8 @@ function location (mhid) {
 
 var records = []; // a valid tags record
 ne_hotels.forEach(function (ne_hotel) {
-  if(mhid_map[ne_hotel.MHID]) { // only map the NE hotels that have valid MHID
+  // if(mhid_map[ne_hotel.MHID] && ne_hotel.MHID === '8usai1c') { // only map the NE hotels that have valid MHID
+  if(mhid_map[ne_hotel.MHID]) { // only insert an NE Hotel if it has a Master Hotel ID else we cannot find it!
     // var master = mhid_map[ne_hotel.MHID];
     records.push({
       _id: 'hotel:NE.wvHotelPartId.' + ne_hotel.WVitemID,
@@ -43,7 +47,7 @@ ne_hotels.forEach(function (ne_hotel) {
   }
 });
 // var nordics_hotels_tags_file = './ne-hotles-tags.json';
-records = records.splice(records.length - 1560, records.length);
+records = records.splice(records.length - 1561, records.length);
 console.log('NE Mapped', records.length);
 // console.log('Sample:', JSON.stringify(records[0], null, 2));
 
@@ -107,7 +111,7 @@ function next () {
     var master = get_master(record); // master hotel record
     var lat = record.location.lat;
     var lon = record.location.lon;
-    if(typeof lat === null || typeof lon === null) { // don't lookup a record that does not have a lat lon in Geonames
+    if (!lat || !lon) { // don't lookup a record that does not have a lat lon in Geonames
       console.log('Record has not got lat/lon!', record);
       return next();
     }
@@ -117,8 +121,11 @@ function next () {
           console.log(err, data);
           return;
       }
+      // console.log(data.geonames);
+      // return;
       geonames.hierarchy(data.geonames[0].geonameId, function(err, hierarchy) {
         // hierarchy.geonames = hierarchy.geonames.splice(1, hierarchy.geonames.length); // remove the first item from the hierarchy (Earth);
+        // console.log(hierarchy);
         var geo_tag; // we use this to add a *single* geo tag the hotel below
 
         for(var i = 0; i < hierarchy.geonames.length; i++) {  // insert the Geonames record
@@ -150,11 +157,14 @@ function next () {
             inherited: false,
             active: true
           }
+          master.tags.push(geo_tag);
         }
-        master.tags.push(geo_tag); // attach a single geo tag to each master hotel
+        // master.tags.push(geo_tag); // attach a single geo tag to each master hotel
 
         insert(master);
         insert(record); // Pascal instructed not to add geo tag to nordics record
+        // console.log('master:',master);
+        // console.log('record:', record);
       });
     });
   }
