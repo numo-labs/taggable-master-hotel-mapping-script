@@ -78,7 +78,7 @@ function save(record, type) {
   });
 }
 
-function insert (record) {
+function insert (record, callback) {
   var params = {
     FunctionName: 'lambda-taggable-createdocument-v1', // lambda function to invoke
     InvocationType: 'RequestResponse',
