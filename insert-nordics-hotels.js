@@ -80,7 +80,7 @@ function save(record, type) {
 
 function insert (record) {
   var params = {
-    FunctionName: 'lambda-taggable-createdocument-v1', // the lambda function we are going to invoke
+    FunctionName: 'lambda-taggable-createdocument-v1', // lambda function to invoke
     InvocationType: 'RequestResponse',
     LogType: 'Tail',
     Payload: JSON.stringify(record)

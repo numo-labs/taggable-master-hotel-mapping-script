@@ -11,7 +11,6 @@ console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
 
 
-var record = format_ne_hotel_as_taggable_tag (all_ne_hotels[ne_hotel_ids[0]]);
+var record = format_ne_hotel_as_taggable_tag (all_ne_hotels['4473']);
 console.log(JSON.stringify(record, null, 2));
 
- 
