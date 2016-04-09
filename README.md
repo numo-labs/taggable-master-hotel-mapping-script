@@ -13,6 +13,10 @@ that we can use to insert the records into the Taggable System.
 
 ## How?
 
+> ***WARNING***: ***Do Not*** attempt to **Open** `/data/all_ne_hotels.json` 
+in your **Text Editor**, ***it will crash***!!
+if you want to view it for any reason, use [glogg](http://glogg.bonnefon.org)
+
 ### *Extract*
 
 *Extract* the Data from Spreadsheet as `.csv`
@@ -63,44 +67,29 @@ The script will output a JSON file which you can use in the next step.
 
 Sample JSON output:
 ```js
-[
-  {
-    "HotelName": "987 Barcelona",
-    "MHID": "qpzq1bp",
-    "WVitemID": "138269",
-    "NE_Code": "HBCN987B",
-    "CAitemID": "58835",
-    "TripadvisorLocationID": "646310"
+{
+  "4463": {
+    "HotelName": "1800 Apartments",
+    "MHID": "htkcusn",
+    "WVitemID": "4463",
+    "NE_Code": "PVKARTO",
+    "CAitemID": "16084",
+    "TripadvisorLocationID": "0"
   },
-  {
-    "HotelName": "Aana Resort and Spa",
-    "MHID": "7exzhjg",
-    "WVitemID": "108176",
-    "NE_Code": "HTDXAANA",
-    "CAitemID": "4728",
-    "TripadvisorLocationID": "582064"
-  },
-  {
+  "4473": {
     "HotelName": "Abella",
     "MHID": "pyypism",
     "WVitemID": "4473",
     "NE_Code": "CHQABEL",
     "CAitemID": "61372",
     "TripadvisorLocationID": "3291424"
-  },
-  {
-    "HotelName": "Abrial",
-    "MHID": "ttbL91i",
-    "WVitemID": "138821",
-    "NE_Code": "HNCEKYRI",
-    "CAitemID": "59278",
-    "TripadvisorLocationID": "196988"
   }
-]
+}
 ```
+This JSON object/map allows you to lookup an NE Hotel by its `WVitemID`.
 
 
-## Part 2 - Master Hotel Records
+### Part 2 - Master Hotel Records
 
 Mapping the `CSV` from the Master Hotel CMS
 
@@ -136,8 +125,8 @@ http://stackoverflow.com/questions/36288375/how-to-parse-csv-data-that-contains-
 Parsed result JSON:
  [mhid-data.json](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/mhid-data.json)
 ```js
-[
-  {
+{
+  "022wje3": {
     "MID": "022wje3",
     "Name": "Europa",
     "Country": "Italy",
@@ -146,43 +135,7 @@ Parsed result JSON:
     "Latitude": "45,67960",
     "Longitude": "13,40070"
   },
-  {
-    "MID": "024oua5",
-    "Name": "Hiberia",
-    "Country": "Italy",
-    "ISO-2": "IT",
-    "Address": "Via XXIV Maggio 8\r\n00187 Rome",
-    "Latitude": "41,89720",
-    "Longitude": "12,48680"
-  },
-  {
-    "MID": "028gupn",
-    "Name": "Regal Riverside",
-    "Country": "Hong Kong",
-    "ISO-2": "HK",
-    "Address": "34-36 Tai Chung Kiu Road\r\nShatin\r\nHong Kong",
-    "Latitude": "22,38260",
-    "Longitude": "114,19600"
-  },
-  {
-    "MID": "02j7qry",
-    "Name": "Okaliptus Holiday Villas Apart",
-    "Country": "Turkey",
-    "ISO-2": "TR",
-    "Address": "Sevket Sabanci Caddesi No. 70\r\nBahçelievler Mevkii\r\nTurgutreis",
-    "Latitude": "37,02130",
-    "Longitude": "27,25120"
-  },
-  {
-    "MID": "02pc99z",
-    "Name": "California Apartementos",
-    "Country": "Spain",
-    "ISO-2": "ES",
-    "Address": "Prat d'en Carbó\r\n43840 Salou",
-    "Latitude": "41,07620",
-    "Longitude": "1,14667"
-  },
-  {
+  "02tu1jz": {
     "MID": "02tu1jz",
     "Name": "Elvis Presley's Heartbreak",
     "Country": "United States",
@@ -191,7 +144,7 @@ Parsed result JSON:
     "Latitude": "35,04850",
     "Longitude": "-90,02710"
   }
-]
+}
 ```
-
+This data model allows us to lookup all a Master Hotel Record by its `MID`.
 

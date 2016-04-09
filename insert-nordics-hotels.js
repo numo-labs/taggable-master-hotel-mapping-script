@@ -35,12 +35,27 @@ ne_hotels.forEach(function (ne_hotel) {
           source: 'master_hotel_mapping',
           inherited: false,
           active: true
+        },
+        {
+          tagId: 'hotel:mhid.' + ne_hotel.MHID + 'jimmy_chooz',
+          source: 'master_hotel_mapping',
+          inherited: false,
+          active: true
+        },
+        {
+          tagId: 'geo:geograph:jackistan',
+          source: 'master_hotel_mapping',
+          inherited: false,
+          active: true
         }
       ],
       metadata: [
         {
           key: 'tripadvisor',
           values: [ ne_hotel.TripadvisorLocationID ]
+        },
+        {
+          key: 'hello', values: ['Nikhi!']
         }
       ]
     });
@@ -84,7 +99,7 @@ function insert (record) {
       data._id = record._id;
       save(data, 'responses');
       if(record._id.indexOf('hotel:NE') > -1) {
-        return next();
+        // return next();
       }
     }
   });
@@ -98,7 +113,12 @@ function get_master (ne_record) {
     _id: 'hotel:mhid.' + m.MID,
     displayName: m.Name,
     location: location(m.MID),
-    tags: []
+    tags: [{
+      tagId: 'hotel:NE.wvHotelPartId.101443',
+      source: 'does_not_matter',
+      inherited: false,
+      active: true
+    }]
   }
 }
 
@@ -157,11 +177,11 @@ function next () {
             inherited: false,
             active: true
           }
-          master.tags.push(geo_tag);
+          // master.tags.push(geo_tag);
         }
-        // master.tags.push(geo_tag); // attach a single geo tag to each master hotel
+        master.tags.push(geo_tag); // attach a single geo tag to each master hotel
 
-        insert(master);
+        // insert(master);
         insert(record); // Pascal instructed not to add geo tag to nordics record
         // console.log('master:',master);
         // console.log('record:', record);
