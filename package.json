@@ -26,6 +26,6 @@
     "aws-sdk": "^2.3.0"
   },
   "dependencies": {
-    "lambda-taggable-geonames-indexer": "^1.0.1"
+    "lambda-taggable-geonames-indexer": "^1.0.3"
   }
 }
