@@ -13,7 +13,7 @@ that we can use to insert the records into the Taggable System.
 
 ## How?
 
-> ***WARNING***: ***Do Not*** attempt to **Open** `/data/all_ne_hotels.json` 
+> ***WARNING***: ***Do Not*** attempt to **Open** `/data/all_ne_hotels.json`
 in your **Text Editor**, ***it will crash***!!
 if you want to view it for any reason, use [glogg](http://glogg.bonnefon.org)
 
@@ -88,11 +88,13 @@ Sample JSON output:
 ```
 This JSON object/map allows you to lookup an NE Hotel by its `WVitemID`.
 
+The script used to transform this data is: [`lib/map_wvitemid_to_mhid_script.js`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/lib/map_wvitemid_to_mhid_script.js)
+
+
 
 ### Part 2 - Master Hotel Records
 
-Mapping the `CSV` from the Master Hotel CMS
-
+Mapping the `.csv` (*data export*) from the Master Hotel CMS
 
 > Data source: http://masterdata.prod.int/hotel-search (*TC internal network & LDAP Access required*)
 > Sample: [`date-20160323-time-105609-42042-hotels.csv`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/date-20160323-time-105609-42042-hotels.csv)
@@ -148,3 +150,15 @@ Parsed result JSON:
 ```
 This data model allows us to lookup all a Master Hotel Record by its `MID`.
 
+The script used to transform this data is: [`lib/parse_master_hotel_records_csv_dump_script.js`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/lib/parse_master_hotel_records_csv_dump_script.js)
+
+
+### Part 3 - Inserting Data into Cloudsearch
+
+Once the data has been processed (*transformed*) from `.csv` to *useable* JSON,
+we can iterate over the list of records,
+lookup the GeoNames details for each one
+and insert the records into CloudSearch using the
+`lambda-taggable-createDocument` Lambda Function.
+
+The script to run is: [`main.js`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/main.js)

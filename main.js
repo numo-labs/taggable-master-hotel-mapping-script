@@ -1,4 +1,4 @@
-process.env.GEONAMES_USERNAMES = 'numo,numo1,numo2,numo3,numo4,numo5'; // a few usernames!
+process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10'; // a few usernames!
 var fs = require('fs');
 var geonames = require('lambda-taggable-geonames-indexer');
 var format_ne_hotel_as_taggable_tag = require('./lib/format_ne_hotel_as_taggable_tag');
@@ -11,9 +11,7 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-
-var ne_hotel_record = format_ne_hotel_as_taggable_tag (all_ne_hotels['4473']);
-console.log(JSON.stringify(ne_hotel_record, null, 2));
+// var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 10, ne_hotel_ids.length);
 
 var records_inserted = [];
 
@@ -99,10 +97,10 @@ function next () {
     });
   }
   else {
-    var unique =  records_inserted.sort().filter(function(item, pos) {
-        return a.indexOf(item) == pos;
+    var unique = records_inserted.sort().filter(function(item, pos) {
+        return records_inserted.indexOf(item) == pos;
     });
-    console.log('records_inserted:', unique.length);
+    console.log('records_inserted:', records_inserted.length, unique.length);
     return true;
   }
 }
