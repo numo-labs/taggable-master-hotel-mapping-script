@@ -13,22 +13,22 @@ console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
 // var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 10, ne_hotel_ids.length);
 
-var records_inserted = [];
+var records_inserted = []; // count the number of records inserted into CloudSearch
 
+/**
+ * next gets the next NE Hotel record from the list and processes it.
+ * gets called recursively until there are no more records left to process.
+ */
 function next () {
-  console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ');
-  console.log('Remaining Records:', ne_hotel_ids.length);
   if(ne_hotel_ids.length > 0) {
+    console.log(' - - - - - - - - - - > Remaining Records:', ne_hotel_ids.length);
     var ne_hotel_id = ne_hotel_ids.pop(); // the NE Hotel ID of next record
     var ne_hotel_record = format_ne_hotel_as_taggable_tag(all_ne_hotels[ne_hotel_id]);
-
     // only lookup & format Master Hotel Record if a mapping exists
     if(ne_hotel_record.tags.length > 0 && ne_hotel_record.tags[0].tagId.indexOf('NO_MHID') === -1) {
       // console.log(ne_hotel_record.tags[0]);
       var master_hotel_record = format_master_hotel_record(ne_hotel_record);
     }
-
-
     var lat = ne_hotel_record.location.lat;
     var lon = ne_hotel_record.location.lon;
     if (!lat || !lon) { // don't lookup a record that does not have a lat lon in Geonames
@@ -42,14 +42,9 @@ function next () {
           console.log(err, data);
           return;
       }
-      // console.log(data.geonames);
-      // return;
-      geonames.hierarchy(data.geonames[0].geonameId, function(err, hierarchy) {
-        // hierarchy.geonames = hierarchy.geonames.splice(1, hierarchy.geonames.length); // remove the first item from the hierarchy (Earth);
+      geonames.hierarchy(data.geonames[0].geonameId, function (err, hierarchy) {
         // console.log(hierarchy);
-        var geo_tag; // we use this to add a *single* geo tag the hotel below
-
-        for(var i = 0; i < hierarchy.geonames.length; i++) {  // insert the Geonames record
+        for (var i = 0; i < hierarchy.geonames.length; i++) {
           var g = hierarchy.geonames[i];
           // console.log(g);
           var geonames_tag_record = {
@@ -73,7 +68,7 @@ function next () {
             lambda_taggable_create_document(geonames_tag_record, cb);
           }
 
-          geo_tag = {
+          var geo_tag = { // the tag we add to other tags
             tagId: 'geo:geonames.' + g.geonameId,
             source: 'geonames',
             inherited: false,
@@ -84,10 +79,9 @@ function next () {
           }
           ne_hotel_record.tags.push(geo_tag);
         }
-        // 
         if (master_hotel_record) {
           lambda_taggable_create_document(master_hotel_record, cb);
-        }
+        } // obviously only insert a master_hotel_record if it exists
 
         lambda_taggable_create_document(ne_hotel_record, function (err, data) {
           records_inserted.push(data._id);
@@ -97,17 +91,18 @@ function next () {
     });
   }
   else {
+    console.log(' - - - - - - - - - - > Done!', records_inserted.length);
     var unique = records_inserted.sort().filter(function(item, pos) {
         return records_inserted.indexOf(item) == pos;
     });
-    console.log('records_inserted:', records_inserted.length, unique.length);
-    return true;
+    console.log('Unique Records', unique.length);
+    return;
   }
 }
 
 function cb (err, data) {
   records_inserted.push(data._id);
-  // console.log(err, data);
-} // does nothing. 
+  // console.log(err, data); // uncomment this for debugging
+} // does nothing.
 
-next();
+next(); // start script!
