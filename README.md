@@ -293,13 +293,3 @@ Frequency of appearance for each tag:
   "displayName":"" 
 }
 
-function init() {
-  var interval = setInterval(function() {
-    if(document.querySelector('.contact-info button')) {
-      clearInterval(interval);
-      // perform the parsing
-    }
-  }, 500); // check for the button every 500ms until its there
-}
-window.onload = init;
-
