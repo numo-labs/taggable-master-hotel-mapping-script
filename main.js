@@ -11,7 +11,7 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-// var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 10, ne_hotel_ids.length);
+var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 3379, ne_hotel_ids.length);
 
 var records_inserted = []; // count the number of records inserted into CloudSearch
 var AMENITIES = []; // add Amenity to this array once inserted into CloudSearch (avoid dupes)
