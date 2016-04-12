@@ -162,3 +162,144 @@ and insert the records into CloudSearch using the
 `lambda-taggable-createDocument` Lambda Function.
 
 The script to run is: [`main.js`](https://github.com/numo-labs/taggable-master-hotel-mapping-script/blob/master/main.js)
+
+### Part 4 - Amenities
+
+When we request the details for a hotel, we receive the following "facts":
+
+```json
+"facts": [
+    {
+      "id": "OutdoorPool",
+      "name": "Pool",
+      "value": "2 stk."
+    },
+    {
+      "id": "DistanceToBeach",
+      "name": "Nærmeste strand",
+      "value": "1,5 km"
+    },
+    {
+      "id": "DistanceToCenter",
+      "name": "Nærmeste centrum",
+      "value": "500 m"
+    },
+    {
+      "id": "Bar",
+      "name": "Bar",
+      "value": "Ja"
+    },
+    {
+      "id": "ChildrenPool",
+      "name": "Børnepool",
+      "value": "Ja"
+    },
+    {
+      "id": "Elevator",
+      "name": "Elevator",
+      "value": "(kabelelevatorer som til tider kan være forstyrrende)"
+    },
+    {
+      "id": "PoolBar",
+      "name": "Poolbar",
+      "value": "Ja"
+    },
+    {
+      "id": 130,
+      "name": "Restaurant",
+      "value": "1"
+    },
+    {
+      "id": "MiniMarket",
+      "name": "Minimarked",
+      "value": "Ja"
+    },
+    {
+      "id": "CleaningDaysPerWeek",
+      "name": "Rengøring (antal dage pr. uge)",
+      "value": "5"
+    },
+    {
+      "id": "Internet",
+      "name": "Internet",
+      "value": "Mod betaling"
+    },
+    {
+      "id": "WaterSlide",
+      "name": "Vandrutsjebane",
+      "value": "Nej"
+    },
+    {
+      "id": "LolloAndBernie",
+      "name": "Lollo och Bernie",
+      "value": false
+    },
+    {
+      "id": "IsAdultHotel",
+      "name": "Adult hotel",
+      "value": false
+    },
+    {
+      "id": "AllInclusive",
+      "name": "All Inclusive",
+      "value": false
+    }
+  ]
+```
+
+Our script simplifies it to a *simple* `Object`:
+
+```js
+{ outdoorpool: false,
+  distancetobeach: true,
+  distancetocenter: '0 m',
+  bar: true,
+  childrenpool: false,
+  elevator: true,
+  poolbar: false,
+  restaurant: true,
+  minimarket: false,
+  cleaningdaysperweek: '6',
+  internet: true,
+  waterslide: false,
+  lolloandbernie: false,
+  isadulthotel: false,
+  allinclusive: false }
+```
+
+Frequency of appearance for each tag:
+
+```js
+{ outdoorpool: 2372,
+  distancetobeach: 2441,
+  distancetocenter: 3230,
+  bar: 2914,
+  childrenpool: 1223,
+  elevator: 2590,
+  poolbar: 1084,
+  minimarket: 424,
+  cleaningdaysperweek: 1887,
+  internet: 3031,
+  waterslide: 126,
+  lolloandbernie: 26,
+  isadulthotel: 227,
+  allinclusive: 102,
+  restaurant: 2716,
+  alacarterestaurant: 2,
+  buffetrestaurant: 4 }
+```
+
+{
+  "displayName":"" 
+}
+
+function init() {
+  var interval = setInterval(function() {
+    if(document.querySelector('.contact-info button')) {
+      clearInterval(interval);
+      // perform the parsing
+    }
+  }, 500); // check for the button every 500ms until its there
+}
+window.onload = init;
+

@@ -1,4 +1,4 @@
-process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10'; // a few usernames!
+process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10'; 
 var fs = require('fs');
 var geonames = require('lambda-taggable-geonames-indexer');
 var format_ne_hotel_as_taggable_tag = require('./lib/format_ne_hotel_as_taggable_tag');
@@ -14,6 +14,7 @@ var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterat
 // var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 10, ne_hotel_ids.length);
 
 var records_inserted = []; // count the number of records inserted into CloudSearch
+var AMENITIES = []; // add Amenity to this array once inserted into CloudSearch (avoid dupes)
 
 /**
  * next gets the next NE Hotel record from the list and processes it.
@@ -53,27 +54,20 @@ function next () {
             location: {
               lat: g.lat,
               lon: g.lng
-            }
+            },
+            tags: []
           }
           if(i > 0) { // earth does not have a parent in Geonames hierarchy
-            var parent = hierarchy.geonames[i - 1]; // the previous item in the hierarchy
-            geonames_tag_record.tags = [{
-              tagId: 'geo:geonames.' + parent.geonameId,
-              source: 'geonames',
-              inherited: false,
-              active: true
-            }]
+            for(var j = hierarchy.geonames.length; j > i; j--) { // don't tag something with its self
+              geonames_tag_record.tags.push(format_geo_tag(hierarchy.geonames[j]));
+            } // this for loop attaches all parents in the geo tag hierarchy to the child
           }
           if(g.geonameId !== 6295630) { // don't re-insert earth thousands of times!
             lambda_taggable_create_document(geonames_tag_record, cb);
           }
 
-          var geo_tag = { // the tag we add to other tags
-            tagId: 'geo:geonames.' + g.geonameId,
-            source: 'geonames',
-            inherited: false,
-            active: true
-          }
+          var geo_tag = format_geo_tag(g.geonameId);
+
           if (master_hotel_record) {
             master_hotel_record.tags.push(geo_tag); // attach a single geo tag to each master hotel
           }
@@ -104,5 +98,14 @@ function cb (err, data) {
   records_inserted.push(data._id);
   // console.log(err, data); // uncomment this for debugging
 } // does nothing.
+
+function format_geo_tag (id) {
+  return { // the tag we add to other tags
+    tagId: 'geo:geonames.' + id,
+    source: 'geonames',
+    inherited: false,
+    active: true
+  }
+}
 
 next(); // start script!
