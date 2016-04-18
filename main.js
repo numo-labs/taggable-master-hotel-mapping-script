@@ -11,10 +11,9 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 2, ne_hotel_ids.length);
+// var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 2969, ne_hotel_ids.length);
 
 var records_inserted = []; // count the number of records inserted into CloudSearch
-var AMENITIES = []; // add Amenity to this array once inserted into CloudSearch (avoid dupes)
 
 /**
  * next gets the next NE Hotel record from the list and processes it.
@@ -44,27 +43,33 @@ function next () {
       geonames.hierarchy(data.geonames[0].geonameId, function (err, hierarchy) {
 
         var geo_tags = geonames.format_hierarchy_as_tags(hierarchy); // https://git.io/vwm8Y
-
+        var geo_map = {};
         geo_tags.forEach(function (g) {
           if (!g._id.match(/6295630/)) { // don't re-insert earth thousands of times!
             lambda_taggable_create_document(g, cb);
             var geo_tag = format_geo_tag(g);
-            // console.log(g);
             if (master_hotel_record) {
-              master_hotel_record.tags.push(geo_tag); // attach a single geo tag to each master hotel
-              g.tags.forEach(function (parent_tag) { master_hotel_record.tags.push(parent_tag); });
+              master_hotel_record.tags.push(geo_tag);
             }
             ne_hotel_record.tags.push(geo_tag);
-            g.tags.forEach(function (parent_tag) { ne_hotel_record.tags.push(parent_tag); });
           }
         });
         if (master_hotel_record) {
-          lambda_taggable_create_document(master_hotel_record, cb);
+          lambda_taggable_create_document(master_hotel_record, function(err, data){
+            if(master_hotel_record._id === 'hotel:mhid.gac7w34') {
+              console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - ');
+              console.log(master_hotel_record);
+              console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - ');
+              process.exit();
+            } else {
+              cb(err, data);
+            }
+          });
         } // obviously only insert a master_hotel_record if it exists
 
         lambda_taggable_create_document(ne_hotel_record, function (err, data) {
           records_inserted.push(data._id);
-          next();
+          return next();
         });
       });
     });
