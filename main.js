@@ -48,15 +48,15 @@ function next () {
         geo_tags.forEach(function (g) {
           if (!g._id.match(/6295630/)) { // don't re-insert earth thousands of times!
             lambda_taggable_create_document(g, cb);
+            var geo_tag = format_geo_tag(g);
+            // console.log(g);
+            if (master_hotel_record) {
+              master_hotel_record.tags.push(geo_tag); // attach a single geo tag to each master hotel
+              g.tags.forEach(function (parent_tag) { master_hotel_record.tags.push(parent_tag); });
+            }
+            ne_hotel_record.tags.push(geo_tag);
+            g.tags.forEach(function (parent_tag) { ne_hotel_record.tags.push(parent_tag); });
           }
-          var geo_tag = format_geo_tag(g);
-
-          if (master_hotel_record) {
-            master_hotel_record.tags.push(geo_tag); // attach a single geo tag to each master hotel
-            g.tags.foreach(function (parent_tag) { master_hotel_record.tags.push(parent_tag); });
-          }
-          ne_hotel_record.tags.push(geo_tag);
-          g.tags.foreach(function (parent_tag) { ne_hotel_record.tags.push(parent_tag); });
         });
         if (master_hotel_record) {
           lambda_taggable_create_document(master_hotel_record, cb);
