@@ -1,6 +1,5 @@
-process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10';
-var fs = require('fs');
-var geonames = require('lambda-taggable-geonames-indexer');
+process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10,numo11,numo12,numo13';
+var geonames = require('tag-e-geo');
 var format_ne_hotel_as_taggable_tag = require('./lib/format_ne_hotel_as_taggable_tag');
 var lambda_taggable_create_document = require('./lib/lambda_taggable_create_document');
 var format_master_hotel_record = require('./lib/format_master_hotel_record_as_taggable_tag.js')
@@ -11,7 +10,7 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-// var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 2969, ne_hotel_ids.length);
+var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 3026, ne_hotel_ids.length);
 
 var records_inserted = []; // count the number of records inserted into CloudSearch
 
@@ -32,44 +31,46 @@ function next () {
     var lat = ne_hotel_record.location.lat;
     var lon = ne_hotel_record.location.lon;
     if (!lat || !lon) { // don't lookup a record that does not have a lat lon in Geonames
-      console.log('Nordics Hotel ha NO lat/lon!', ne_hotel_record._id);
-      return next();
+      console.log('- - - - - - - - - - -> Nordics Hotel ha NO lat/lon!', ne_hotel_record._id);
+      return setTimeout(function() { next(); }, 3000);
     }
     console.log('Record has lat/lon:', lat, lon);
     geonames.find(lat, lon, function (err, data) {
-      if(!data.geonames || data.geonames.length === 0){
-        return console.log(' - - - - - - - -Geonames ERROR:', err, data);
+      if(err || !data || !data.geonames || data.geonames.length === 0){
+        console.log(' - - - - - - - -> Geonames Find ERROR:', err, data);
+        return setTimeout(function() { next(); }, 3000);
       }
       geonames.hierarchy(data.geonames[0].geonameId, function (err, hierarchy) {
-
-        var geo_tags = geonames.format_hierarchy_as_tags(hierarchy); // https://git.io/vwm8Y
-        var geo_map = {};
-        geo_tags.forEach(function (g) {
-          if (!g._id.match(/6295630/)) { // don't re-insert earth thousands of times!
-            lambda_taggable_create_document(g, cb);
-            var geo_tag = format_geo_tag(g);
-            if (master_hotel_record) {
-              master_hotel_record.tags.push(geo_tag);
-            }
-            ne_hotel_record.tags.push(geo_tag);
+        if (err || !hierarchy || !hierarchy.geonames) {
+          console.log(' - - - - - - - -> Geonames Hierarchy ERROR:', err, hierarchy);
+          return setTimeout(function() { next(); }, 3000);
+        }
+        geonames.get_all_geonames_records(hierarchy, function (err, map) {
+          if(err || !map || Object.keys(map) < 1) {
+            console.log(' - - - - - - - -> Geonames Hierarchy ERROR:', err, hierarchy);
+            return setTimeout(function() { next(); }, 3000);
           }
-        });
-        if (master_hotel_record) {
-          lambda_taggable_create_document(master_hotel_record, function(err, data){
-            if(master_hotel_record._id === 'hotel:mhid.gac7w34') {
-              console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - ');
-              console.log(master_hotel_record);
-              console.log(' - - - - - - - - - - - - - - - - - - - - - - - - - - ');
-              process.exit();
-            } else {
-              cb(err, data);
+          var geo_tags = geonames.format_hierarchy_as_tags(hierarchy, map); // https://git.io/vwm8Y
+          var geo_map = {};
+          geo_tags.forEach(function (g) {
+            if (!g._id.match(/6295630/)) { // don't re-insert earth thousands of times!
+              lambda_taggable_create_document(g, cb);
+              var geo_tag = format_geo_tag(g);
+              if (master_hotel_record) {
+                master_hotel_record.tags.push(geo_tag);
+              }
+              ne_hotel_record.tags.push(geo_tag);
             }
           });
-        } // obviously only insert a master_hotel_record if it exists
+          if (master_hotel_record) {
+            // consolidate_geo_metadata(geo_tags);
+            lambda_taggable_create_document(master_hotel_record, cb);
+          } // obviously only insert a master_hotel_record if it exists
 
-        lambda_taggable_create_document(ne_hotel_record, function (err, data) {
-          records_inserted.push(data._id);
-          return next();
+          lambda_taggable_create_document(ne_hotel_record, function (err, data) {
+            records_inserted.push(data._id);
+            return next();
+          });
         });
       });
     });

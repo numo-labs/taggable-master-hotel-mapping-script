@@ -24,6 +24,7 @@
   "homepage": "https://github.com/numo-labs/taggable-master-hotel-mapping-script#readme",
   "devDependencies": {
     "aws-sdk": "^2.3.0",
-    "lambda-taggable-geonames-indexer": "^1.0.5"
+    "lambda-taggable-geonames-indexer": "^1.0.5",
+    "tag-e-geo": "^1.0.7"
   }
 }
