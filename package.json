@@ -34,5 +34,9 @@
   },
   "pre-commit": [
     "test"
-  ]
+  ],
+  "dependencies": {
+    "tag-e-geo": "^1.1.0",
+    "neo4j": "2.0.0-RC2"
+  }
 }

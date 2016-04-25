@@ -1,8 +1,9 @@
-process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10,numo11,numo12,numo13';
+process.env.GEONAMES_USERNAMES = 'numo,numo0,numo1,numo2,numo3,numo4,numo5,numo6,numo7,numo8,numo9,numo10,numo11,numo12,numo13,numo14,numo15';
 var geonames = require('tag-e-geo');
 var format_ne_hotel_as_taggable_tag = require('./lib/format_ne_hotel_as_taggable_tag');
 // var lambda_taggable_create_document = require('./lib/lambda_taggable_create_document');
 var s3_create = require('./lib/s3_create');
+var neo4j_create = require('./lib/neo4j_create');
 var format_master_hotel_record = require('./lib/format_master_hotel_record_as_taggable_tag.js')
 
 // Load the full list of NE Hoteles which have Package Holidays
@@ -16,7 +17,7 @@ var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterat
 var records_inserted = []; // count the number of records inserted into CloudSearch
 
 /**
- * next gets the next NE Hotel record from the list and processes it.
+ * next gets the next NE Hotel record from the list andc processes it.
  * gets called recursively until there are no more records left to process.
  */
 function next () {
@@ -48,17 +49,17 @@ function next () {
           return setTimeout(function() { next(); }, 3000);
         }
         hierarchy._id = ne_hotel_record._id; // save the hierarcy info for NE Hotel
-        s3_create('geo/geonames-hierarchy', hierarchy, cb); 
+        // s3_create('geo/geonames-hierarchy', hierarchy, cb); 
         geonames.get_all_geonames_records(hierarchy, function (err, map) {
           if(err || !map || Object.keys(map) < 1) {
             console.log(' - - - - - - - -> Geonames getJSON ERROR:', err, hierarchy);
             return setTimeout(function() { next(); }, 3000);
           }
-          Object.keys(map).forEach(function(g) { 
-            var geonames_complete = map[g];
-            geonames_complete._id = g;
-            s3_create('geo/geonames-full', geonames_complete, cb); 
-          });
+          // Object.keys(map).forEach(function(g) { 
+          //   var geonames_complete = map[g];
+          //   geonames_complete._id = g;
+          //   s3_create('geo/geonames-full', geonames_complete, cb);
+          // });
 
           var geo_tags = geonames.format_hierarchy_as_tags(hierarchy, map); // https://git.io/vwm8Y
           var geo_map = {};
@@ -66,19 +67,24 @@ function next () {
           geo_tags.forEach(function (g) {
             if (!g._id.match(/6295630/)) { // don't re-insert earth thousands of times!
               // lambda_taggable_create_document(g, cb);
-              s3_create('geo/geonames', g, cb);
+              // s3_create('geo/geonames', g, cb);
+              neo4j_create(g, function(){
+                console.log(g._id);
+              });
               geo_tag = format_geo_tag(g); // over-write
             }
           });
           if (master_hotel_record) {
             master_hotel_record.tags.unshift(geo_tag); // only add the final Geo tag to Master
             // lambda_taggable_create_document(master_hotel_record, cb);
-            s3_create('hotels/master', master_hotel_record, cb);
+            // s3_create('hotels/master', master_hotel_record, cb);
+            neo4j_create(master_hotel_record, cb);
           } // obviously only insert a master_hotel_record if it exists
 
           // lambda_taggable_create_document(ne_hotel_record, function (err, data) {
-          s3_create('hotels/nordics', ne_hotel_record, function(err, data){
-            records_inserted.push(data.key);
+          // s3_create('hotels/nordics', ne_hotel_record, function(err, data) {
+          neo4j_create(ne_hotel_record, function () {
+            // records_inserted.push(data.key);
             return next();
           });
         });
@@ -96,9 +102,9 @@ function next () {
 }
 
 function cb (err, data) {
-  records_inserted.push(data.key);
+  // records_inserted.push(data.key);
   // console.log(err, data); // uncomment this for debugging
-  console.log(data.Location);
+  // console.log(data.Location);
 } // does nothing.
 
 function format_geo_tag (g) {
