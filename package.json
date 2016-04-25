@@ -1,6 +1,6 @@
 {
   "name": "taggable-master-hotel-mapping-script",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "script used to extract & load the hotel data into taggable system",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,11 @@
   "devDependencies": {
     "aws-sdk": "^2.3.0",
     "lambda-taggable-geonames-indexer": "^1.0.5",
-    "tag-e-geo": "^1.0.7"
+    "tag-e-geo": "^1.0.7",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "pre-commit": "^1.1.2",
+    "semistandard": "^7.0.5",
+    "snazzy": "^3.0.0"
   }
 }
