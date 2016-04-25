@@ -4,7 +4,7 @@
   "description": "script used to extract & load the hotel data into taggable system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -31,5 +31,8 @@
     "pre-commit": "^1.1.2",
     "semistandard": "^7.0.5",
     "snazzy": "^3.0.0"
-  }
+  },
+  "pre-commit": [
+    "test"
+  ]
 }
