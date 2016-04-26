@@ -58,7 +58,7 @@ function next () {
 }
 
 function cb (err, data) {
-  console.log(err, data); // uncomment this for debugging
+  // console.log(err, data); // uncomment this for debugging
 } // does nothing.
 
 function format_geo_tag (g) {

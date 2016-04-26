@@ -289,7 +289,20 @@ Frequency of appearance for each tag:
   buffetrestaurant: 4 }
 ```
 
-{
-  "displayName":"" 
-}
+## Running the `main.js` Script
 
+You will need the standard set of environment variables to invoke Lambda Functions:
+
+```sh
+export AWS_REGION=eu-west-1
+export AWS_IAM_ROLE=arn:aws:iam::847002989232:role/lambdafull
+export AWS_ACCESS_KEY_ID=yourId
+export AWS_SECRET_ACCESS_KEY=yourKey
+```
+
+once you have exported those, simply run:
+
+```js
+node main.js
+```
+This will insert all the geonames, master hotel & ne hotel records into S3 for indexing.
