@@ -13,7 +13,7 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-// var ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 100, ne_hotel_ids.length);
+ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 2196, ne_hotel_ids.length);
 
 /**
  * next gets the next NE Hotel record from the list and processes it.
@@ -24,7 +24,7 @@ function next () {
   var ne_hotel_record = format_ne_hotel_as_taggable_tag(all_ne_hotels[ne_hotel_id]);
 
   // only lookup & format Master Hotel Record if a mapping exists
-  if(ne_hotel_record.tags.length > 0 && ne_hotel_record.tags[0].tagId.indexOf('NO_MHID') === -1) {
+  if(ne_hotel_record.tags.length > 0 && ne_hotel_record.tags[0].node.indexOf('NO_MHID') === -1) {
     var master_hotel_record = format_master_hotel_record(ne_hotel_record);
   }
   if (!ne_hotel_record.location.lat || !ne_hotel_record.location.lat) { // don't lookup 
@@ -42,15 +42,18 @@ function next () {
 
     var g = geo_tags[geo_tags.length - 1];
     // s3_create('geo/geonames', g, cb);
-    var geo_tag = format_geo_tag(g); // only the last geotag in the hierarchy
-
+    if (g && g._id) {
+      var geo_tag = format_geo_tag(g); // only the last geotag in the hierarchy
+    }
     if (master_hotel_record) {
-      master_hotel_record.tags.unshift(geo_tag); // only add the final Geo tag to Master
+      if (geo_tag) {
+        master_hotel_record.tags.unshift(geo_tag); // only add the final Geo tag to Master
+      }
       // lambda_taggable_create_document(master_hotel_record, cb);
-      s3_create('hotels/master', master_hotel_record, cb);
+      s3_create(master_hotel_record, cb);
       // neo4j_create(master_hotel_record, cb);
     } // obviously only insert a master_hotel_record if it exists
-    s3_create('hotels/nordics', ne_hotel_record, function(err, data) {
+    s3_create(ne_hotel_record, function(err, data) {
     // neo4j_create(ne_hotel_record, function () {
       return; // done!
     });
@@ -62,8 +65,10 @@ function cb (err, data) {
 } // does nothing.
 
 function format_geo_tag (g) {
+  // console.log(g)
   return { // the tag we add to other tags
-    tagId: g._id,
+    node: g._id,
+    edge: 'LOCATED_IN',
     displayName: g.displayName,
     source: 'geonames',
     inherited: false,
