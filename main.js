@@ -13,7 +13,7 @@ var all_ne_hotels = require('./data/all_ne_hotels.json');
 console.log('All NE Hotels with Packages:', Object.keys(all_ne_hotels).length);
 
 var ne_hotel_ids = Object.keys(all_ne_hotels); // Array of Ids so we can itterate
-ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 2196, ne_hotel_ids.length);
+// ne_hotel_ids = ne_hotel_ids.splice(ne_hotel_ids.length - 200, ne_hotel_ids.length);
 
 /**
  * next gets the next NE Hotel record from the list and processes it.
@@ -26,7 +26,10 @@ function next () {
   // only lookup & format Master Hotel Record if a mapping exists
   if(ne_hotel_record.tags.length > 0 && ne_hotel_record.tags[0].node.indexOf('NO_MHID') === -1) {
     var master_hotel_record = format_master_hotel_record(ne_hotel_record);
+  } else {
+    return; // don't bother indexing NE Hotels without a MHID
   }
+
   if (!ne_hotel_record.location.lat || !ne_hotel_record.location.lat) { // don't lookup 
     console.log('- - - - - - - - - - -> Nordics Hotel ha NO lat/lon!', ne_hotel_record._id);
     return; // return early
@@ -52,16 +55,17 @@ function next () {
       // lambda_taggable_create_document(master_hotel_record, cb);
       s3_create(master_hotel_record, cb);
       // neo4j_create(master_hotel_record, cb);
+      return;
     } // obviously only insert a master_hotel_record if it exists
-    s3_create(ne_hotel_record, function(err, data) {
-    // neo4j_create(ne_hotel_record, function () {
-      return; // done!
-    });
+    // s3_create(ne_hotel_record, function(err, data) {
+    // // neo4j_create(ne_hotel_record, function () {
+    //   return; // done!
+    // });
   });
 }
 
 function cb (err, data) {
-  // console.log(err, data); // uncomment this for debugging
+  console.log(err, data._id); // uncomment this for debugging
 } // does nothing.
 
 function format_geo_tag (g) {
